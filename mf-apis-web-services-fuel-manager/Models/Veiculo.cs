@@ -28,5 +28,7 @@ namespace mf_apis_web_services_fuel_manager.Models
 
         public ICollection<Consumo> Consumos { get; set; }
 
+        public ICollection<VeiculoUsuarios> Usuario { get; set; }
+
     }
 }

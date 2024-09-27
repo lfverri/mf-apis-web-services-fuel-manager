@@ -11,17 +11,28 @@ namespace mf_apis_web_services_fuel_manager
                 
         }
 
-        public DbSet<Veiculo> Veiculos { get; set; }
-        public DbSet<Consumo> Consumos { get; set; }
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder builder)
         {
-            // Configurando o tipo de dado para o campo 'Valor'
-            modelBuilder.Entity<Consumo>()
+            builder.Entity<VeiculoUsuarios>()
+                .HasKey(c => new {c.VeiculoId, c.UsuarioId}) ;
+
+            builder.Entity<VeiculoUsuarios>()
+                .HasOne(c => c.Veiculo).WithMany(c => c.Usuario)
+                .HasForeignKey(c => c.VeiculoId);
+
+            builder.Entity<VeiculoUsuarios>()
+             .HasOne(c => c.Usuario).WithMany(c => c.Veiculos)
+             .HasForeignKey(c => c.UsuarioId);
+
+            builder.Entity<Consumo>()
                 .Property(c => c.Valor)
                 .HasColumnType("decimal(18,2)");
-
-            // Configurações adicionais para outras entidades, se necessário
         }
+        public DbSet<Veiculo> Veiculos { get; set; }
+        public DbSet<Consumo> Consumos { get; set; }
+        public DbSet<Usuario> Usuarios { get; set; }
+        public DbSet<VeiculoUsuarios> VeiculoUsuarios { get; set; }
+       
     }
 }
  

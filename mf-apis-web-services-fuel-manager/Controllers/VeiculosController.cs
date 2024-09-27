@@ -14,11 +14,11 @@ namespace mf_apis_web_services_fuel_manager.Controllers
 
         public VeiculosController(AppDbContext context)
         {
-             _context = context;
+            _context = context;
         }
 
         [HttpGet] //get all para pegar todos os veiculos 
-        public async Task<ActionResult> GetAll() 
+        public async Task<ActionResult> GetAll()
         {
             var model = await _context.Veiculos.ToListAsync();
 
@@ -29,6 +29,7 @@ namespace mf_apis_web_services_fuel_manager.Controllers
         public async Task<ActionResult> GetById(int id)
         {
             var model = await _context.Veiculos
+                .Include(t => t.Usuario).ThenInclude(t => t.Usuario)
                 .Include(c => c.Consumos)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
@@ -41,7 +42,7 @@ namespace mf_apis_web_services_fuel_manager.Controllers
         [HttpPost]
         public async Task<ActionResult> Create(Veiculo model)
         {
-            if (model.AnoFabricacao <= 0 || model.AnoModelo <= 0)            
+            if (model.AnoFabricacao <= 0 || model.AnoModelo <= 0)
             {
                 return BadRequest(new { message = "Os campos Ano de Fabricação e Ano do Modelo não foram preenchidos corretamente." });
 
@@ -50,7 +51,7 @@ namespace mf_apis_web_services_fuel_manager.Controllers
             _context.Veiculos.Add(model);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetById", new {id = model.Id}, model);
+            return CreatedAtAction("GetById", new { id = model.Id }, model);
         }
 
         [HttpPut("{id}")]
@@ -76,8 +77,8 @@ namespace mf_apis_web_services_fuel_manager.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
-         var model = await _context.Veiculos.FindAsync(id);
-            if (model == null)  return NotFound();
+            var model = await _context.Veiculos.FindAsync(id);
+            if (model == null) return NotFound();
 
             _context.Veiculos.Remove(model);
 
@@ -86,12 +87,40 @@ namespace mf_apis_web_services_fuel_manager.Controllers
             return NoContent();
         }
 
-        private void GerarLinks (Veiculo model)
+        private void GerarLinks(Veiculo model)
         {
-            model.Links.Add(new LinkDto(model.Id, Url.ActionLink() , rel: "self", metodo: "GET"));
+            model.Links.Add(new LinkDto(model.Id, Url.ActionLink(), rel: "self", metodo: "GET"));
             model.Links.Add(new LinkDto(model.Id, Url.ActionLink(), rel: "update", metodo: "PUT"));
             model.Links.Add(new LinkDto(model.Id, Url.ActionLink(), rel: "delete", metodo: "Delete"));
         }
 
+        [HttpPost("{id}/usuarios")]
+        public async Task<ActionResult> AddUsuario(int id, VeiculoUsuarios model)
+        {
+            if (id != model.VeiculoId) return BadRequest();
+
+            _context.VeiculoUsuarios.Add(model);
+
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetById", new { id = model.VeiculoId }, model);
+        }
+
+        [HttpDelete("{id}/usuarios/{usuarioId}")]
+
+        public async Task<ActionResult> DeleteUsuario(int id, int usuarioId)
+        {
+          var model = await _context.VeiculoUsuarios
+                .Where(c => c.VeiculoId == id && c.UsuarioId == usuarioId)
+                .FirstOrDefaultAsync();
+
+            if(model == null) return BadRequest();
+
+            _context.VeiculoUsuarios .Remove(model);
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 }
