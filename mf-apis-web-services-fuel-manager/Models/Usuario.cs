@@ -25,7 +25,7 @@ namespace mf_apis_web_services_fuel_manager.Models
     public enum Perfil
     {
         [Display (Name = "Administrador")]
-        Admistrador,
+        Administrador,
 
         [Display (Name ="Usuario")]
         Usuario
